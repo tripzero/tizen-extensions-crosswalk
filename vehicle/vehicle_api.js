@@ -48,6 +48,31 @@ function _defineVehicleProperty(obj, prop)
         
 }
 
+extension.setMessageListener(function(json) {
+  var msg = JSON.parse(json);
+  
+  switch (msg.method) {
+      case "get" :
+          handleGetReply(msg)
+          break;
+  }
+});
+
+function handleGetReply(msg)
+{
+   /// getReply: { method : 'get', asyncCallId : 1, error : false, value : obj }
+   
+   var cbobj = async_calls[msg.asyncCallId];
+   
+   if(msg.error === true)
+   {
+       cbobj.reject(msg.value)
+   }
+   else cbobj.resolve(msg.value);
+   
+   /// clean up:
+   delete async_calls[msg.asyncCallId];
+}
 
 function Vehicle() {
     // constructor for Vehilce
