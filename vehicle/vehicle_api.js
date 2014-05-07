@@ -14,8 +14,8 @@ VehicleInterface.prototype.get = function (zone)
 {
     var msg = {};
     msg["method"] = "get";
-    msg["arg1"] = this.attributeName;
-    msg["arg2"] = zone;
+    msg["name"] = this.attributeName;
+    msg["zone"] = zone;
 
     return createPromise(msg);
 }
@@ -33,6 +33,24 @@ function createPromise(msg)
        async_calls[next_async_call_id]  = new AsyncCall(resolve, reject);
     });
 
+    msg.asyncCallId = next_async_call_id;
+    extension.postMessage(JSON.stringify(msg));
     ++next_async_call_id;
     return promise;
 }
+
+function _defineVehicleProperty(obj, prop)
+{
+    Object.defineProperty(obj, prop, {
+        enumerable : true,
+        value : new VehicleInterface(prop)
+    });
+        
+}
+
+
+function Vehicle() {
+    // constructor for Vehilce
+    _defineVehicleProperty(this, "vehicleSpeed");
+}
+
