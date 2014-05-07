@@ -8,6 +8,28 @@ var async_calls = {};
 function VehicleInterface(attname)
 {
     this.attributeName = attname;
+    
+    ///get zones from extension:
+    
+    var msg = {};
+    msg["method"] = "zones";
+    msg["name"] = this.attributeName;
+    
+    this._zones = [];
+    
+    var call = new AsyncCall(function (data) {
+       
+        this._zones = data;
+    });
+    
+    async_calls[next_async_call_id] = call;
+    ++next_async_call_id;
+    
+    extension.postMessage(JSON.stringify(msg));
+    
+    Object.defineProperty(this, "zones", {
+       get : function () {return this._zones} 
+    });
 }
 
 VehicleInterface.prototype.get = function (zone)
@@ -52,9 +74,12 @@ extension.setMessageListener(function(json) {
   var msg = JSON.parse(json);
   
   switch (msg.method) {
-      case "get" :
-          handleGetReply(msg)
-          break;
+        case "get" :
+            handleGetReply(msg);
+            break;
+        case "zones" :
+            handleZonesReply(msg);
+            break;
   }
 });
 
@@ -72,6 +97,15 @@ function handleGetReply(msg)
    
    /// clean up:
    delete async_calls[msg.asyncCallId];
+}
+
+function handleZonesReply(msg)
+{
+    /// zonesReply: { method : 'zones', asyncCallId: 1, value: data }
+    
+    var cbobj = async_calls[msg.asyncCallId];
+    
+    cbobj.resolve(msg.value);
 }
 
 function Vehicle() {
