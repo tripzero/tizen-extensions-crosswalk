@@ -15,20 +15,10 @@ function VehicleInterface(attname)
     msg["method"] = "zones";
     msg["name"] = this.attributeName;
     
-    this._zones = [];
-    
-    var call = new AsyncCall(function (data) {
-       
-        this._zones = data;
-    });
-    
-    async_calls[next_async_call_id] = call;
-    ++next_async_call_id;
-    
-    extension.postMessage(JSON.stringify(msg));
+    this._zones = extension.internal.sendSyncMessage(JSON.stringify(msg));
     
     Object.defineProperty(this, "zones", {
-       get : function () {return this._zones} 
+       get : function () { return this._zones}
     });
 }
 
@@ -108,8 +98,9 @@ function handleZonesReply(msg)
     cbobj.resolve(msg.value);
 }
 
-function Vehicle() {
+function Vehicle()
+{
     // constructor for Vehilce
-    _defineVehicleProperty(this, "vehicleSpeed");
+    _defineVehicleProperty(this, "engineSpeed");
 }
 
